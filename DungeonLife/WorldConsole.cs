@@ -82,8 +82,8 @@ namespace DungeonLife
         {
             foreach (var entity in Entities)
             {
-                var dx = entity.X - x;
-                var dy = entity.Y - y;
+                var dx = entity.Position.X - x;
+                var dy = entity.Position.Y - y;
                 if (dx * dx + dy * dy <= 2)
                 {
                     return entity;
@@ -96,8 +96,8 @@ namespace DungeonLife
         {
             foreach (var entity in Entities)
             {
-                var dx = entity.X - x;
-                var dy = entity.Y - y;
+                var dx = entity.Position.X - x;
+                var dy = entity.Position.Y - y;
                 if ((dx * dx + dy * dy) <= radius * radius)
                 {
                     if ((entityType == null) || (entityType == entity.GetType()))

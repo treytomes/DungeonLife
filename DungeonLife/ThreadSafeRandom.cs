@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 
 namespace DungeonLife
 {
@@ -65,6 +66,11 @@ namespace DungeonLife
         {
             Verify();
             return _local.NextDouble();
+        }
+
+        public Vector2 NextDirection()
+        {
+            return Vector2.Normalize(new Vector2((float)NextDouble(), (float)NextDouble()) * 2.0f - Vector2.One);
         }
     }
 }

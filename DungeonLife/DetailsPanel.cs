@@ -96,7 +96,7 @@ namespace DungeonLife
             {
                 var algae = (SelectedCell as FloorWorldCell)?.AlgaeLevel ?? 0;
 
-                _cellDetailsHeader.DisplayText = $"Cell Details ({SelectedCell.X}, {SelectedCell.Y})";
+                _cellDetailsHeader.DisplayText = $"Cell Details ({SelectedCell.Position.X}, {SelectedCell.Position.Y})";
                 _algaeLabel.DisplayText = $"Algae: {algae}";
                 _temperatureLabel.DisplayText = $"Temperature: {(int)SelectedCell.Temperature}C";
                 _humidityLabel.DisplayText = $"Humidity: {(int)(SelectedCell.Humidity * 100)}%";
@@ -104,7 +104,7 @@ namespace DungeonLife
 
             if (SelectedEntity != null)
             {
-                _entityDetailsHeader.DisplayText = $"Entity Details ({(int)SelectedEntity.X}, {(int)SelectedEntity.Y})";
+                _entityDetailsHeader.DisplayText = $"Entity Details ({(int)SelectedEntity.Position.X}, {(int)SelectedEntity.Position.Y})";
                 _entityName.DisplayText = $"Name: {SelectedEntity.GetType().GetCustomAttribute<DisplayNameAttribute>().DisplayName}";
                 _entityAge.DisplayText = $"Age: {(int)SelectedEntity.Age.TotalDays}";
                 _entityHunger.DisplayText = $"Hunger: {(int)(SelectedEntity.Hunger * 100)}%";

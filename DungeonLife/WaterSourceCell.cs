@@ -50,7 +50,7 @@ namespace DungeonLife
                 Humidity -= HUMIDITY_DELTA;
             }
 
-            var newTemp = GetRegionTemperature(X, Y, state.Cells);
+            var newTemp = GetRegionTemperature(Position, state.Cells);
 
             // Water act as a temperature stabilizer; much more so than floors.
             Temperature = (2 * Temperature + newTemp) / 3.0f;

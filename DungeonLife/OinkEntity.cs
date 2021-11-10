@@ -25,8 +25,7 @@ namespace DungeonLife
 
         public Entity(int x, int y)
         {
-            X = x;
-            Y = y;
+            Position = new Vector2(x, y);
             MaturityAge = TimeSpan.Zero;
             Age = TimeSpan.Zero;
         }
@@ -43,10 +42,9 @@ namespace DungeonLife
 
         public EntityBehavior ActiveBehavior { get; private set; }
 
-        public Direction MovingDirection { get; set; }
+        public Vector2 MovingDirection { get; set; }
 
-        public float X { get; protected set; }
-        public float Y { get; protected set; }
+        public Vector2 Position { get; set; }
         public TimeSpan MaturityAge { get; protected set; }
         public TimeSpan Age { get; private set; }
 
@@ -117,18 +115,15 @@ namespace DungeonLife
             Thirst += Metabolism * ThirstMultiplier;
             Thirst = MathHelpers.Clamp(Thirst, 0.0f, 1.0f);
 
-            var cell = world.Cells[(int)X, (int)Y];
-            var newX = X + MovingDirection.DeltaX * cell.MovementSpeedMultiplier;
-            var newY = Y + MovingDirection.DeltaY * cell.MovementSpeedMultiplier;
-            if (world.IsMovementBlocked(newX, newY))
+            var cell = world.Cells[(int)Position.X, (int)Position.Y];
+            var newPosition = Position + MovingDirection * cell.MovementSpeedMultiplier;
+            if (world.IsMovementBlocked(newPosition.X, newPosition.Y))
             {
-                MovingDirection.DeltaX = -MovingDirection.DeltaX;
-                MovingDirection.DeltaY = -MovingDirection.DeltaY;
+                MovingDirection = -MovingDirection;
             }
             else
             {
-                X = newX;
-                Y = newY;
+                Position = newPosition;
 
                 // TODO: If the cell is wet, increase the wetness of this entity.
                 // TODO: Water should slow movement speed.
@@ -137,8 +132,8 @@ namespace DungeonLife
 
         public void Render(CellSurface surface)
         {
-            surface.SetGlyph((int)X, (int)Y, Glyph);
-            surface.SetForeground((int)X, (int)Y, ForegroundColor);
+            surface.SetGlyph((int)Position.X, (int)Position.Y, Glyph);
+            surface.SetForeground((int)Position.X, (int)Position.Y, ForegroundColor);
         }
 
         #endregion

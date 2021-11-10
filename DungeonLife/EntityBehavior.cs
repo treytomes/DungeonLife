@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 
 namespace DungeonLife
@@ -54,17 +55,15 @@ namespace DungeonLife
         public EntityWanderBehavior(Entity entity)
             : base(entity)
         {
-            _entity.MovingDirection = Direction.Random;
+            _entity.MovingDirection = _random.NextDirection();
         }
 
         public override bool Update(IWorldState world)
         {
             if (_random.NextDouble() > _changeDirectionChance)
             {
-                var newDirection = Direction.Random;
-                _entity.MovingDirection.DeltaX = (_entity.MovingDirection.DeltaX * MAINTENANCE_BIAS + newDirection.DeltaX) / (MAINTENANCE_BIAS + 1);
-                _entity.MovingDirection.DeltaY = (_entity.MovingDirection.DeltaY * MAINTENANCE_BIAS + newDirection.DeltaY) / (MAINTENANCE_BIAS + 1);
-                _entity.MovingDirection.Normalize();
+                var newDirection = _random.NextDirection();
+                _entity.MovingDirection = Vector2.Normalize((_entity.MovingDirection * MAINTENANCE_BIAS + new Vector2(newDirection.X, newDirection.Y)) / (MAINTENANCE_BIAS + 1));
                 return true;
             }
             return false;
@@ -88,7 +87,7 @@ namespace DungeonLife
 
         public override bool Update(IWorldState world)
         {
-            var entities = world.GetEntitiesInArea(_entity.X, _entity.Y, _entity.RangeOfSight, _entity.GetType());
+            var entities = world.GetEntitiesInArea(_entity.Position.X, _entity.Position.Y, _entity.RangeOfSight, _entity.GetType());
             var count = entities.Count();
             if (count <= 1)
             {
@@ -102,26 +101,23 @@ namespace DungeonLife
                     continue;
                 }
 
-                float dx = _entity.X - entity.X;
-                float dy = _entity.Y - entity.Y;
-                float distance = dx * dx + dy * dy;
+                var delta = _entity.Position - entity.Position;
+                var distance = delta.LengthSquared();
                 if (distance <= _separationAmountSquared)
                 {
                     // It's too close!
 
                     // The normalized distance is the new movement direction.
-                    distance = (float)Math.Sqrt(distance);
-                    dx = dx / distance;
-                    dy = dy / distance;
+                    distance = delta.Length();
+                    delta /= distance;
 
-                    if ((dx == 0) && (dy == 0))
+                    if (delta == Vector2.Zero)
                     {
                         return false;
                     }
 
-                    _entity.MovingDirection.DeltaX = (_entity.MovingDirection.DeltaX * MAINTENANCE_BIAS + dx) / (MAINTENANCE_BIAS + 1);
-                    _entity.MovingDirection.DeltaY = (_entity.MovingDirection.DeltaY * MAINTENANCE_BIAS + dy) / (MAINTENANCE_BIAS + 1);
-                    _entity.MovingDirection.Normalize();
+                    delta = Vector2.Normalize(delta);
+                    _entity.MovingDirection = Vector2.Normalize((_entity.MovingDirection * MAINTENANCE_BIAS + delta) / (MAINTENANCE_BIAS + 1));
                     return true;
                 }
             }
@@ -141,7 +137,7 @@ namespace DungeonLife
 
         public override bool Update(IWorldState world)
         {
-            var entities = world.GetEntitiesInArea(_entity.X, _entity.Y, _entity.RangeOfSight, _entity.GetType());
+            var entities = world.GetEntitiesInArea(_entity.Position.X, _entity.Position.Y, _entity.RangeOfSight, _entity.GetType());
             var count = entities.Count();
             if (count <= 1)
             {
@@ -153,8 +149,8 @@ namespace DungeonLife
             float dy = 0;
             foreach (var entity in entities)
             {
-                dx += entity.MovingDirection.DeltaX;
-                dy += entity.MovingDirection.DeltaY;
+                dx += entity.MovingDirection.X;
+                dy += entity.MovingDirection.Y;
             }
             dx /= count;
             dy /= count;
@@ -164,9 +160,8 @@ namespace DungeonLife
                 return false;
             }
 
-            _entity.MovingDirection.DeltaX = (_entity.MovingDirection.DeltaX * MAINTENANCE_BIAS + dx) / (MAINTENANCE_BIAS + 1);
-            _entity.MovingDirection.DeltaY = (_entity.MovingDirection.DeltaY * MAINTENANCE_BIAS + dy) / (MAINTENANCE_BIAS + 1);
-            _entity.MovingDirection.Normalize();
+            var d = Vector2.Normalize(new Vector2(dx, dy));
+            _entity.MovingDirection = Vector2.Normalize((_entity.MovingDirection * MAINTENANCE_BIAS + new Vector2(d.X, d.Y)) / (MAINTENANCE_BIAS + 1));
             return true;
         }
     }
@@ -183,7 +178,7 @@ namespace DungeonLife
 
         public override bool Update(IWorldState world)
         {
-            var entities = world.GetEntitiesInArea(_entity.X, _entity.Y, _entity.RangeOfSight, _entity.GetType());
+            var entities = world.GetEntitiesInArea(_entity.Position.X, _entity.Position.Y, _entity.RangeOfSight, _entity.GetType());
             var count = entities.Count();
             if (count <= 1)
             {
@@ -191,36 +186,28 @@ namespace DungeonLife
                 return false;
             }
 
-            float cx = 0;
-            float cy = 0;
+            var center = Vector2.Zero;
             foreach (var entity in entities)
             {
-                cx += entity.X;
-                cy += entity.Y;
+                center += entity.Position;
                 count++;
             }
-            cx /= count;
-            cy /= count;
+            center /= count;
 
-            if ((cx == _entity.X) && (cy == _entity.Y))
+            if (center == _entity.Position)
             {
                 return false;
             }
 
-            var dx = _entity.X - cx;
-            var dy = _entity.Y - cy;
+            var delta = _entity.Position - center;
 
-            if ((dx == 0) && (dy == 0))
+            if (delta == Vector2.Zero)
             {
                 return false;
             }
+            delta = Vector2.Normalize(delta);
 
-            var d = new Direction(dx, dy);
-            d.Normalize();
-
-            _entity.MovingDirection.DeltaX = (_entity.MovingDirection.DeltaX * MAINTENANCE_BIAS + dx) / (MAINTENANCE_BIAS + 1);
-            _entity.MovingDirection.DeltaY = (_entity.MovingDirection.DeltaY * MAINTENANCE_BIAS + dy) / (MAINTENANCE_BIAS + 1);
-            _entity.MovingDirection.Normalize();
+            _entity.MovingDirection = (_entity.MovingDirection * MAINTENANCE_BIAS + delta) / (MAINTENANCE_BIAS + 1);
             return true;
         }
     }
@@ -271,7 +258,7 @@ namespace DungeonLife
                 return false;
             }
 
-            var currentCell = world.Cells[(int)_entity.X, (int)_entity.Y] as WaterSourceCell;
+            var currentCell = world.Cells[(int)_entity.Position.X, (int)_entity.Position.Y] as WaterSourceCell;
             if (currentCell != null)
             {
                 if (Drink(currentCell))
@@ -281,31 +268,24 @@ namespace DungeonLife
             }
 
             // Seek out water.
-            var cells = IterateOver((int)_entity.X, (int)_entity.Y, world.Cells, _entity.RangeOfSight);
+            var cells = IterateOver((int)_entity.Position.X, (int)_entity.Position.Y, world.Cells, _entity.RangeOfSight);
 
             var closestWaterDistance = float.MaxValue;
-            var closestWaterX = float.MaxValue;
-            var closestWaterY = float.MaxValue;
+            var closestWaterPosition = Vector2.One * float.MaxValue;
 
             var closestHumidDistance = float.MaxValue;
-            var closestHumidX = float.MaxValue;
-            var closestHumidY = float.MaxValue;
+            var closestHumidPosition = Vector2.One * float.MaxValue;
             var closestHumidity = float.MinValue;
-            float dx;
-            float dy;
 
             foreach (var cell in cells)
             {
                 if (cell is WaterSourceCell)
                 {
-                    dx = _entity.X - cell.X;
-                    dy = _entity.Y - cell.Y;
-                    var dist = dx * dx + dy * dy;
+                    var dist = (_entity.Position - cell.Position).LengthSquared();
                     if (dist < closestWaterDistance)
                     {
                         closestWaterDistance = dist;
-                        closestWaterX = cell.X;
-                        closestWaterY = cell.Y;
+                        closestWaterPosition = cell.Position;
 
                         if (closestWaterDistance <= 1)
                         {
@@ -316,54 +296,45 @@ namespace DungeonLife
                 else if (closestWaterDistance == float.MaxValue)
                 {
                     // No water found yet, so look for the most humid cell.
-
-                    dx = _entity.X - cell.X;
-                    dy = _entity.Y - cell.Y;
-                    var dist = dx * dx + dy * dy;
+                    var dist = (_entity.Position - cell.Position).LengthSquared();
 
                     // Is the cell either more humid than the current target, or just as humid and closer?
                     if ((cell.Humidity > closestHumidity) || ((cell.Humidity == closestHumidDistance) && (dist < closestHumidDistance)))
                     {
                         closestHumidDistance = dist;
-                        closestHumidX = cell.X;
-                        closestHumidY = cell.Y;
+                        closestHumidPosition = cell.Position;
                         closestHumidity = cell.Humidity;
                     }
                 }
             }
 
-            dx = 0.0f;
-            dy = 0.0f;
+            var delta = Vector2.Zero;
             if (closestWaterDistance != float.MaxValue)
             {
                 if (closestWaterDistance <= 1)
                 {
                     // You're next to the water, so take a drink.
-                    if (Drink(world.Cells[(int)closestWaterX, (int)closestWaterY]))
+                    if (Drink(world.Cells[(int)closestWaterPosition.X, (int)closestWaterPosition.Y]))
                     {
                         return true;
                     }
                 }
 
-                dx = closestWaterX - _entity.X;
-                dy = closestWaterY - _entity.Y;
+                delta = closestWaterPosition - _entity.Position;
             }
             else if (closestHumidDistance != float.MaxValue)
             {
-                dx = closestHumidX - _entity.X;
-                dy = closestHumidY - _entity.Y;
+                delta = closestHumidPosition - _entity.Position;
             }
 
-            if ((dx != 0.0) || (dy != 0.0f))
+            if (delta == Vector2.Zero)
             {
-                _entity.MovingDirection.DeltaX = dx;
-                _entity.MovingDirection.DeltaY = dy;
-                _entity.MovingDirection.Normalize();
-                return true;
+                return false;
             }
             else
             {
-                return false;
+                _entity.MovingDirection = Vector2.Normalize(delta);
+                return true;
             }
         }
     }
@@ -433,21 +404,18 @@ namespace DungeonLife
 
             // Seek out food.
 
-            var currentCell = world.Cells[(int)_entity.X, (int)_entity.Y];
+            var currentCell = world.Cells[(int)_entity.Position.X, (int)_entity.Position.Y];
             if (Eat(currentCell))
             {
                 return true;
             }
 
             // Seek out water.
-            var cells = IterateOver((int)_entity.X, (int)_entity.Y, world.Cells, _entity.RangeOfSight);
+            var cells = IterateOver((int)_entity.Position.X, (int)_entity.Position.Y, world.Cells, _entity.RangeOfSight);
 
             var closestFoodDistance = float.MaxValue;
-            var closestFoodX = float.MaxValue;
-            var closestFoodY = float.MaxValue;
+            var closestFoodPosition = Vector2.One * float.MaxValue;
             var closestFoodLevel = float.MinValue;
-            float dx;
-            float dy;
 
             foreach (var cell in cells)
             {
@@ -455,45 +423,38 @@ namespace DungeonLife
                 if ((floor != null) && (floor.AlgaeLevel > 0))
                 {
                     // Grab either the closest floor cell or the one with the highest food level.
-                    dx = _entity.X - cell.X;
-                    dy = _entity.Y - cell.Y;
-                    var dist = dx * dx + dy * dy;
+                    var dist = (_entity.Position - cell.Position).LengthSquared();
 
                     if ((dist < closestFoodDistance) || ((dist == closestFoodDistance) && (floor.AlgaeLevel > closestFoodLevel)))
                     {
                         closestFoodDistance = dist;
-                        closestFoodX = cell.X;
-                        closestFoodY = cell.Y;
+                        closestFoodPosition = cell.Position;
                         closestFoodLevel = floor.AlgaeLevel;
                     }
                 }
             }
 
-            dx = 0.0f;
-            dy = 0.0f;
+            var delta = Vector2.Zero;
             if (closestFoodDistance != float.MaxValue)
             {
                 if (closestFoodDistance <= 1)
                 {
-                    if (Eat(world.Cells[(int)closestFoodX, (int)closestFoodY]))
+                    if (Eat(world.Cells[(int)closestFoodPosition.X, (int)closestFoodPosition.Y]))
                     {
                         return true;
                     }
                 }
-                dx = closestFoodX - _entity.X;
-                dy = closestFoodY - _entity.Y;
+                delta = closestFoodPosition - _entity.Position;
             }
 
-            if ((dx != 0.0) || (dy != 0.0f))
+            if (delta == Vector2.Zero)
             {
-                _entity.MovingDirection.DeltaX = dx;
-                _entity.MovingDirection.DeltaY = dy;
-                _entity.MovingDirection.Normalize();
-                return true;
+                return false;
             }
             else
             {
-                return false;
+                _entity.MovingDirection = Vector2.Normalize(delta);
+                return true;
             }
         }
     }

@@ -34,7 +34,7 @@ The cells are affected by temperature and humidity.  Too hot and they burn, too 
 Oinks feed on algae.  They get hungry fast, and thirsty a bit slower.  They will move in flocks following the Boids algorithm.
 
 #### TODO
-* Reproductive urge, temperature sensitivity, wetness sensitivity, mortality, corpses.
+* Reproductive urge, temperature sensitivity, wetness sensitivity, mortality, corpses, sense of smell.
 
 ## Toolchain
 

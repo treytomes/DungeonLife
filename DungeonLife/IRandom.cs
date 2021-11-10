@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 
 namespace DungeonLife
 {
@@ -81,5 +82,7 @@ namespace DungeonLife
         //     A double-precision floating point number that is greater than or equal to 0.0,
         //     and less than 1.0.
         double NextDouble();
+
+        Vector2 NextDirection();
     }
 }

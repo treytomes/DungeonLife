@@ -3,6 +3,7 @@ using SadRogue.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
 namespace DungeonLife
 {
@@ -30,16 +31,14 @@ namespace DungeonLife
 
         public WorldCell(int x, int y)
         {
-            X = x;
-            Y = y;
+            Position = new Vector2(x, y);
         }
 
         #endregion
 
         #region Properties
 
-        public int X { get; }
-        public int Y { get; }
+        public Vector2 Position { get; }
         public float MovementSpeedMultiplier { get; set; } = 1.0f;
 
         public bool BlocksMovement
@@ -82,56 +81,56 @@ namespace DungeonLife
 
         public virtual void Update(IWorldState state)
         {
-            Humidity = GetRegionHumidity(X, Y, state.Cells) * 0.999f;
+            Humidity = GetRegionHumidity(Position, state.Cells) * 0.999f;
             Humidity = MathHelpers.Clamp(Humidity, 0.0f, 1.0f);
         }
 
         public virtual void Draw(TimeSpan delta, CellSurface surface)
         {
-            surface.SetGlyph(X, Y, Glyph, ForegroundColor, BackgroundColor);
+            surface.SetGlyph((int)Position.X, (int)Position.Y, Glyph, ForegroundColor, BackgroundColor);
         }
 
-        protected IEnumerable<WorldCell> IterateOver(int x, int y, WorldCell[,] cells, int radius)
+        protected IEnumerable<WorldCell> IterateOver(Vector2 position, WorldCell[,] cells, int radius)
         {
-            var xMin = Math.Max(0, x - radius);
-            var xMax = Math.Min(cells.GetLength(0) - 1, x + radius);
-            var yMin = Math.Max(0, y - radius);
-            var yMax = Math.Min(cells.GetLength(1) - 1, y + radius);
+            var xMin = Math.Max(0, Position.X - radius);
+            var xMax = Math.Min(cells.GetLength(0) - 1, Position.X + radius);
+            var yMin = Math.Max(0, Position.Y - radius);
+            var yMax = Math.Min(cells.GetLength(1) - 1, Position.Y + radius);
 
             for (var xx = xMin; xx <= xMax; xx++)
             {
                 for (var yy = yMin; yy <= yMax; yy++)
                 {
-                    yield return cells[xx, yy];
+                    yield return cells[(int)xx, (int)yy];
                 }
             }
         }
 
-        protected float SumOver(int x, int y, WorldCell[,] cells, int radius, Func<WorldCell, float> property)
+        protected float SumOver(Vector2 position, WorldCell[,] cells, int radius, Func<WorldCell, float> property)
         {
-            return IterateOver(x, y, cells, radius).Sum(property);
+            return IterateOver(position, cells, radius).Sum(property);
         }
 
-        protected float AverageOver(int x, int y, WorldCell[,] cells, int radius, Func<WorldCell, float> property)
+        protected float AverageOver(Vector2 position, WorldCell[,] cells, int radius, Func<WorldCell, float> property)
         {
             var numCells = (radius * 2 + 1) * (radius * 2 + 1);
-            return SumOver(x, y, cells, radius, property) / numCells;
+            return SumOver(position, cells, radius, property) / numCells;
         }
 
         /// <summary>
         /// Get the average temperature for the region.
         /// </summary>
-        protected float GetRegionTemperature(int x, int y, WorldCell[,] cells, int radius = TEMPERATURE_SEARCH_RADIUS)
+        protected float GetRegionTemperature(Vector2 position, WorldCell[,] cells, int radius = TEMPERATURE_SEARCH_RADIUS)
         {
-            return AverageOver(x, y, cells, radius, c => c.Temperature);
+            return AverageOver(position, cells, radius, c => c.Temperature);
         }
 
         /// <summary>
         /// Get the average humidity for the region.
         /// </summary>
-        protected float GetRegionHumidity(int x, int y, WorldCell[,] cells, int radius = HUMIDITY_SEARCH_RADIUS)
+        protected float GetRegionHumidity(Vector2 position, WorldCell[,] cells, int radius = HUMIDITY_SEARCH_RADIUS)
         {
-            return AverageOver(x, y, cells, radius, c => c.Humidity);
+            return AverageOver(position, cells, radius, c => c.Humidity);
         }
 
         #endregion

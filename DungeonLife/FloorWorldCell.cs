@@ -1,5 +1,6 @@
 ﻿using SadRogue.Primitives;
 using System;
+using System.Numerics;
 
 namespace DungeonLife
 {
@@ -67,9 +68,9 @@ namespace DungeonLife
 
         public float AlgaeLevel { get; set; }
 
-        private float GetRegionAlgae(int x, int y, int radius, WorldCell[,] cells)
+        private float GetRegionAlgae(Vector2 position, int radius, WorldCell[,] cells)
         {
-            return SumOver(x, y, cells, radius, c => (c as FloorWorldCell)?.AlgaeLevel ?? 0);
+            return SumOver(position, cells, radius, c => (c as FloorWorldCell)?.AlgaeLevel ?? 0);
         }
 
         /// <returns>The amount of life to set to the cell's algae level.</returns>
@@ -178,7 +179,7 @@ namespace DungeonLife
         {
             base.Update(state);
 
-            var regionValue = GetRegionAlgae(X, Y, ALGAE_SEARCH_RADIUS, state.Cells);
+            var regionValue = GetRegionAlgae(Position, ALGAE_SEARCH_RADIUS, state.Cells);
 
             AlgaeLevel = ConwayFrameRule(AlgaeLevel, regionValue);
 
@@ -188,7 +189,7 @@ namespace DungeonLife
             }
 
             // Humidity should prevent temperature from spreading as quickly.
-            var avgTemp = GetRegionTemperature(X, Y, state.Cells);
+            var avgTemp = GetRegionTemperature(Position, state.Cells);
             var deltaTemp = avgTemp - Temperature;
             Temperature += (1.0f - Humidity) * deltaTemp;
 
