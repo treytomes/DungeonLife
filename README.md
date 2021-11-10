@@ -16,7 +16,7 @@ A work in progress.  The "dungeon" is a 256x256 tile room.  The border wall will
 When water begins to heat, it lets off steam, which will raise the humidity that dissipates throughout the room.  There are stone pillars scattered around the room
 that will slow down the passage of heat.  Water will also slow the spread of heat.
 
-### TODO:
+### TODO
 * I have a cellular-automata based cavern generator that will be used here soon-ish.
 
 ## Lifeforms
@@ -26,12 +26,15 @@ that will slow down the passage of heat.  Water will also slow the spread of hea
 The algae cells are at the bottom of the food chain.  They roughly follow the rules of Conway's Game of Life, modified to use floating point values.
 The cells are affected by temperature and humidity.  Too hot and they burn, too cold and they stop moving.
 
+#### TODO
+* Increased growth by feeding on oink corpses.
+
 ### Oinks
 
 Oinks feed on algae.  They get hungry fast, and thirsty a bit slower.  They will move in flocks following the Boids algorithm.
 
-#### TODO:
-* Reproductive urge, temperature sensitivity, wetness sensitivity.
+#### TODO
+* Reproductive urge, temperature sensitivity, wetness sensitivity, mortality, corpses.
 
 ## Toolchain
 
