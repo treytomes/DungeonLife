@@ -2,6 +2,14 @@
 
 An artificial life terrarium that takes place in a roguelike-inspired dungeon.
 
+## Controls
+
+Click-and-drag with the middle mouse button on the world display to move it around.  Or you can use the scrollbars.
+
+Click on a cell to load the cell and entity details into the side panel.
+
+The toolbar at the top of the screen can be used to run the simulation, pause it, and then step it one tick at a time.  It also displays the current world time.  One minute passes for each tick.
+
 ## Environment
 
 A work in progress.  The "dungeon" is a 256x256 tile room.  The border wall will emit either heat or cold throughout the day.  The heat dissipates into the room.
