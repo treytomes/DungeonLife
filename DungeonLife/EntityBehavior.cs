@@ -8,7 +8,7 @@ namespace DungeonLife
 {
     public abstract class EntityBehavior
     {
-        protected static IRandom _random = new ThreadSafeRandom();
+        protected static IRandom _random = ThreadSafeRandom.Instance;
         protected readonly Entity _entity;
 
         public EntityBehavior(Entity entity)

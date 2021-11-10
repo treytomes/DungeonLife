@@ -21,7 +21,7 @@ namespace DungeonLife
 
         #region Fields
 
-        protected static IRandom _random = new ThreadSafeRandom();
+        protected static IRandom _random = ThreadSafeRandom.Instance;
         private Color _backgroundColor = Color.Black;
 
         #endregion

@@ -4,7 +4,7 @@ namespace DungeonLife
 {
     public class Direction
     {
-        private static IRandom _random = new ThreadSafeRandom();
+        private static IRandom _random = ThreadSafeRandom.Instance;
 
         public Direction(float dx, float dy)
         {

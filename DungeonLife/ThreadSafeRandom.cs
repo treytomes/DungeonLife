@@ -7,6 +7,17 @@ namespace DungeonLife
         private static readonly Random _global = new Random();
         [ThreadStatic] private static Random _local;
 
+        static ThreadSafeRandom()
+        {
+            Instance = new ThreadSafeRandom();
+        }
+
+        private ThreadSafeRandom()
+        {
+        }
+
+        public static ThreadSafeRandom Instance { get; }
+
         private void Verify()
         {
             if (_local == null)

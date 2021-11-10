@@ -28,7 +28,7 @@ namespace DungeonLife
 
         #region Fields
 
-        private static IRandom _random = new ThreadSafeRandom();
+        private static IRandom _random = ThreadSafeRandom.Instance;
         private CellSurface _sharedSurface;
         private bool _isDrawing = false;
         private bool _isMoving = false;
