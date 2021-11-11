@@ -8,15 +8,6 @@ namespace DungeonLife
 {
     class Entity
     {
-        #region Constants
-
-        // A high thirst multiplier makes the entity favor water like a duck.
-
-        public float HungerMultiplier { get; protected set; } = 1.5f;
-        public float ThirstMultiplier { get; protected set; } = 3.0f;
-
-        #endregion
-
         #region Constructors
 
         public Entity(int x, int y)
@@ -29,6 +20,13 @@ namespace DungeonLife
         #endregion
 
         #region Properties
+
+        // A high thirst multiplier makes the entity favor water like a duck.
+
+        public float HungerMultiplier { get; protected set; } = 1.5f;
+        public float ThirstMultiplier { get; protected set; } = 3.0f;
+        public float RangeOfSightMultiplier { get; protected set; } = 0.3f;
+        public float RangeOfSmellMultiplier { get; protected set; } = 0.5f;
 
         /// <summary>
         /// Behaviors to be executed in order.  The first behavior that does something
@@ -45,6 +43,32 @@ namespace DungeonLife
         public TimeSpan Age { get; private set; }
 
         /// <summary>
+        /// Rate of energy consumption.  Indirectly increases hunger and thirst.
+        /// </summary>
+        public float Metabolism { get; protected set; }
+
+        /// <summary>
+        /// Affects the range of sight, and range of smell.
+        /// </summary>
+        public int Perception { get; protected set; }
+
+        public float RangeOfSight
+        {
+            get
+            {
+                return Perception * RangeOfSightMultiplier;
+            }
+        }
+
+        public float RangeOfSmell
+        {
+            get
+            {
+                return Perception * RangeOfSmellMultiplier;
+            }
+        }
+
+        /// <summary>
         /// 0% = no hunger.  100% = starvation.
         /// </summary>
         public float Hunger { get; set; }
@@ -53,13 +77,6 @@ namespace DungeonLife
         /// 0% = no thirst.  100% = dying of thirst.
         /// </summary>
         public float Thirst { get; set; }
-
-        /// <summary>
-        /// Rate of energy consumption.  Indirectly increases hunger and thirst.
-        /// </summary>
-        public float Metabolism { get; protected set; }
-
-        public int RangeOfSight { get; protected set; }
 
         public int BabyGlyph { get; protected set; }
         public int AdultGlyph { get; protected set; }

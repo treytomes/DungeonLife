@@ -18,11 +18,15 @@ namespace DungeonLife
             AdultGlyph = GLYPH_ADULT;
             ForegroundColor = Color.Pink;
             Metabolism = 0.0001f;
-            RangeOfSight = 6;
+            Perception = 18;
 
             // Oinks are hungry creatures.
             HungerMultiplier = 5.0f;
             ThirstMultiplier = 1.0f;
+
+            // Oinks can smell better than they can see.
+            RangeOfSmellMultiplier = 0.5f;
+            RangeOfSightMultiplier = 0.3f;
 
             // TODO: Oxygen
             // TODO: Reproduction

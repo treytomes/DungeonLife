@@ -52,13 +52,14 @@ namespace DungeonLife
             }
         }
 
-        public IEnumerable<WorldCell> IterateOver(Vector2 position, int radius)
+        public IEnumerable<WorldCell> IterateOver(Vector2 position, float radius)
         {
             var xMin = (int)Math.Max(0, position.X - radius);
             var xMax = (int)Math.Min(Width - 1, position.X + radius);
             var yMin = (int)Math.Max(0, position.Y - radius);
             var yMax = (int)Math.Min(Height - 1, position.Y + radius);
 
+            // I could search an actual circle area, but this bit is calculated tons of times and I don't want the extra processing.
             for (var xx = xMin; xx <= xMax; xx++)
             {
                 for (var yy = yMin; yy <= yMax; yy++)
@@ -68,12 +69,12 @@ namespace DungeonLife
             }
         }
 
-        public float SumOver(Vector2 position, int radius, Func<WorldCell, float> property)
+        public float SumOver(Vector2 position, float radius, Func<WorldCell, float> property)
         {
             return IterateOver(position, radius).Sum(property);
         }
 
-        public float AverageOver(Vector2 position, int radius, Func<WorldCell, float> property)
+        public float AverageOver(Vector2 position, float radius, Func<WorldCell, float> property)
         {
             var numCells = 4 * radius * radius + 2 * (radius * 2) + 1; // (radius * 2 + 1) * (radius * 2 + 1);
             return SumOver(position, radius, property) / numCells;
@@ -82,7 +83,7 @@ namespace DungeonLife
         /// <summary>
         /// Get the average temperature for the region.
         /// </summary>
-        public float GetRegionTemperature(Vector2 position, int radius)
+        public float GetRegionTemperature(Vector2 position, float radius)
         {
             return AverageOver(position, radius, c => c.Temperature);
         }
@@ -90,7 +91,7 @@ namespace DungeonLife
         /// <summary>
         /// Get the average humidity for the region.
         /// </summary>
-        public float GetRegionHumidity(Vector2 position, int radius)
+        public float GetRegionHumidity(Vector2 position, float radius)
         {
             return AverageOver(position, radius, c => c.Humidity);
         }
