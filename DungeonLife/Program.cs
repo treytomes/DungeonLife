@@ -60,7 +60,7 @@ namespace DungeonLife
                 var world = sender as IWorldState;
                 //cellInfoDialog.SelectCell(sender as IWorldState, e);
                 details.SelectedCell = world.Cells[e.WorldX, e.WorldY];
-                details.SelectedEntity = world.GetEntityAt(e.WorldX, e.WorldY);
+                details.SelectedEntity = world.Entities.At(e.WorldX, e.WorldY);
             };
             _main.Children.Add(_worldConsole);
 

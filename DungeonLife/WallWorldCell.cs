@@ -6,7 +6,7 @@ namespace DungeonLife
     /// <summary>
     /// A wall cannot be passed.
     /// </summary>
-    public class WallWorldCell : WorldCell
+    class WallWorldCell : WorldCell
     {
         public WallWorldCell(int x, int y)
             : base(x, y)

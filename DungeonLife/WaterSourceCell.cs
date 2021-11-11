@@ -7,7 +7,7 @@ namespace DungeonLife
     /// <summary>
     /// Water defies temperature changes, and will spread humidity as it warms up.
     /// </summary>
-    public class WaterSourceCell : WorldCell
+    class WaterSourceCell : WorldCell
     {
         private const int GLYPH_WATER1 = '~';
         private const int GLYPH_WATER2 = 247;
@@ -39,7 +39,7 @@ namespace DungeonLife
         {
             base.Update(state);
 
-            var tempDistance = Temperature - IDEAL_TEMPERATURE;
+            var tempDistance = Temperature - LifeAppSettings.IdealTemperature;
             // Water will evaporate or condense depending on how hot or cold it is.
             if ((tempDistance > 0) && (Humidity < 1))
             {
@@ -50,15 +50,15 @@ namespace DungeonLife
                 Humidity -= HUMIDITY_DELTA;
             }
 
-            var newTemp = GetRegionTemperature(Position, state.Cells);
+            var newTemp = state.Cells.GetRegionTemperature(Position, TEMPERATURE_SEARCH_RADIUS);
 
             // Water act as a temperature stabilizer; much more so than floors.
             Temperature = (2 * Temperature + newTemp) / 3.0f;
-            if (Temperature > IDEAL_TEMPERATURE)
+            if (Temperature > LifeAppSettings.IdealTemperature)
             {
                 Temperature -= 0.001f;
             }
-            else if (Temperature < IDEAL_TEMPERATURE)
+            else if (Temperature < LifeAppSettings.IdealTemperature)
             {
                 Temperature += 0.001f;
             }

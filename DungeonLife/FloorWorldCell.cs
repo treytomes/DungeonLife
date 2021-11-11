@@ -7,7 +7,7 @@ namespace DungeonLife
     /// <summary>
     /// Algae spreads over floors.  Floors also act as minor heat sinks.
     /// </summary>
-    public class FloorWorldCell : WorldCell
+    class FloorWorldCell : WorldCell
     {
         private const int ALGAE_SEARCH_RADIUS = 1;
         private const float SPONTANEOUS_LIFE_CHANCE = 0.01f;
@@ -21,13 +21,9 @@ namespace DungeonLife
         public FloorWorldCell(int x, int y)
             : base(x, y)
         {
-            // The floor starts frozen.  Let's see what happens.
-            Temperature = IDEAL_TEMPERATURE;
-            //Humidity = 0.0f;
-            Humidity = (float)_random.NextDouble() * 0.02f;
-
-            //Temperature = IDEAL_TEMPERATURE;
-            AlgaeLevel = (float)_random.NextDouble();
+            Temperature = 0.0f;
+            Humidity = 0.0f;
+            AlgaeLevel = 0.0f;
 
             Glyph = '.';
             BackgroundColor = Color.Black;
@@ -68,16 +64,16 @@ namespace DungeonLife
 
         public float AlgaeLevel { get; set; }
 
-        private float GetRegionAlgae(Vector2 position, int radius, WorldCell[,] cells)
+        private float GetRegionAlgae(WorldCellCollection cells, Vector2 position, int radius)
         {
-            return SumOver(position, cells, radius, c => (c as FloorWorldCell)?.AlgaeLevel ?? 0);
+            return cells.SumOver(position, radius, c => (c as FloorWorldCell)?.AlgaeLevel ?? 0);
         }
 
         /// <returns>The amount of life to set to the cell's algae level.</returns>
         private float ConwayFrameRule(float cellValue, float regionValue)
         {
             // This gets small as the distance from ideal increases.
-            var tempDistance = 2 * (Temperature - IDEAL_TEMPERATURE);
+            var tempDistance = 2 * (Temperature - LifeAppSettings.IdealTemperature);
             if (tempDistance != 0)
             {
                 tempDistance = 1.0f / tempDistance;
@@ -151,7 +147,7 @@ namespace DungeonLife
             {
                 // A cell will slowly age and die.
                 // The cell should age slower in dry climates.
-                if ((Temperature - IDEAL_TEMPERATURE) > 0.001f)
+                if ((Temperature - LifeAppSettings.IdealTemperature) > 0.001f)
                 {
                     // Go ahead and age it if it gets too hot.  Frozen algae lasts forever.
                     newValue -= AGE_RATE;
@@ -179,7 +175,7 @@ namespace DungeonLife
         {
             base.Update(state);
 
-            var regionValue = GetRegionAlgae(Position, ALGAE_SEARCH_RADIUS, state.Cells);
+            var regionValue = GetRegionAlgae(state.Cells, Position, ALGAE_SEARCH_RADIUS);
 
             AlgaeLevel = ConwayFrameRule(AlgaeLevel, regionValue);
 
@@ -189,16 +185,16 @@ namespace DungeonLife
             }
 
             // Humidity should prevent temperature from spreading as quickly.
-            var avgTemp = GetRegionTemperature(Position, state.Cells);
+            var avgTemp = state.Cells.GetRegionTemperature(Position, TEMPERATURE_SEARCH_RADIUS);
             var deltaTemp = avgTemp - Temperature;
             Temperature += (1.0f - Humidity) * deltaTemp;
 
             // Floors act as a heat sink.
-            if (Temperature < IDEAL_TEMPERATURE)
+            if (Temperature < LifeAppSettings.IdealTemperature)
             {
                 Temperature += HEAT_SINK_VALUE;
             }
-            else if (Temperature > IDEAL_TEMPERATURE)
+            else if (Temperature > LifeAppSettings.IdealTemperature)
             {
                 Temperature -= HEAT_SINK_VALUE;
             }

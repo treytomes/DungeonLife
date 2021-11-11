@@ -3,19 +3,15 @@ using SadConsole.UI;
 using SadConsole.UI.Controls;
 using SadRogue.Primitives;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Numerics;
 using System.Threading.Tasks;
 
 namespace DungeonLife
 {
-    internal class WorldConsole : ControlsConsole, IWorldState
+    class WorldConsole : ControlsConsole, IWorldState
     {
         #region Constants
 
-        public const int WORLD_WIDTH = 256;
-        public const int WORLD_HEIGHT = 256;
         private const int MS_PER_FRAME = 100;
 
         #endregion
@@ -41,17 +37,16 @@ namespace DungeonLife
 
         #region Constructors
 
-        public WorldConsole(int width, int height)
+        public WorldConsole(int width, int height, WorldGenerator generator = null)
             : base(width, height)
         {
-            Cells = new WorldCell[WORLD_WIDTH, WORLD_HEIGHT];
-            BuildWorld();
+            Cells = new WorldCellCollection(LifeAppSettings.WorldWidth, LifeAppSettings.WorldHeight);
+            Entities = new EntityCollection();
 
-            Entities = new List<Entity>();
-            PlaceEntities();
+            (generator ?? new SpaciousCavernGenerator()).Generate(this);
 
             // Create the shared surface
-            _sharedSurface = new CellSurface(WORLD_WIDTH, WORLD_HEIGHT);
+            _sharedSurface = new CellSurface(LifeAppSettings.WorldWidth, LifeAppSettings.WorldHeight);
 
             // Create viewer controls and attach them to the surface
             var viewer = new SurfaceViewer(width, height);
@@ -67,10 +62,8 @@ namespace DungeonLife
         #region Properties
 
         public TimeSpan WorldTime { get; set; }
-
-        public WorldCell[,] Cells { get; private set; }
-
-        public List<Entity> Entities { get; }
+        public WorldCellCollection Cells { get; private set; }
+        public EntityCollection Entities { get; }
         public bool IsRunning { get; set; } = true;
         public bool IsStepping { get; set; } = false;
 
@@ -78,170 +71,9 @@ namespace DungeonLife
 
         #region Methods
 
-        public Entity GetEntityAt(float x, float y)
+        public bool IsMovementBlocked(Vector2 position)
         {
-            foreach (var entity in Entities)
-            {
-                var dx = entity.Position.X - x;
-                var dy = entity.Position.Y - y;
-                if (dx * dx + dy * dy <= 2)
-                {
-                    return entity;
-                }
-            }
-            return null;
-        }
-
-        public IEnumerable<Entity> GetEntitiesInArea(float x, float y, float radius, Type entityType = null)
-        {
-            foreach (var entity in Entities)
-            {
-                var dx = entity.Position.X - x;
-                var dy = entity.Position.Y - y;
-                if ((dx * dx + dy * dy) <= radius * radius)
-                {
-                    if ((entityType == null) || (entityType == entity.GetType()))
-                    {
-                        yield return entity;
-                    }
-                }
-            }
-        }
-
-        public bool IsMovementBlocked(float x, float y)
-        {
-            if ((x < 0) || (x >= Cells.GetLength(0)) || (y < 0) || (y >= Cells.GetLength(1)))
-            {
-                return true;
-            }
-            return Cells[(int)x, (int)y]?.BlocksMovement ?? false;
-        }
-
-        public void SetAlgaeValue(int x, int y, float value)
-        {
-            var cell = Cells[x, y] as FloorWorldCell;
-            if (cell == null)
-            {
-                return;
-            }
-            cell.AlgaeLevel = value;
-        }
-
-        private void BuildWorld()
-        {
-            // Fill the area with floors.
-            for (var x = 1; x < WORLD_WIDTH - 1; x++)
-            {
-                for (var y = 1; y < WORLD_HEIGHT - 1; y++)
-                {
-                    Cells[x, y] = new FloorWorldCell(x, y);
-                }
-            }
-
-            // Make a small pond.
-            DrawPond(Cells, 32, 32, 12);
-            DrawPond(Cells, 200, 96, 24);
-            DrawPond(Cells, 0, 255, 32);
-
-            var numPillars = _random.Next(5, 10);
-            for (var n = 0; n < numPillars; n++)
-            {
-                var radius = _random.Next(4, 12);
-                var x = _random.Next(0, Cells.GetLength(0));
-                var y = _random.Next(0, Cells.GetLength(1));
-                DrawPillar(Cells, x, y, radius);
-            }
-
-            // Build the borders.
-            for (var x = 0; x < WORLD_WIDTH; x++)
-            {
-                Cells[x, 0] = new BorderWorldCell(x, 0);
-                Cells[x, WORLD_HEIGHT - 1] = new BorderWorldCell(x, WORLD_HEIGHT - 1);
-            }
-            for (var y = 0; y < WORLD_HEIGHT; y++)
-            {
-                Cells[0, y] = new BorderWorldCell(0, y);
-                Cells[WORLD_WIDTH - 1, y] = new BorderWorldCell(WORLD_WIDTH - 1, y);
-            }
-        }
-
-        private void DrawPond(WorldCell[,] cells, int pondX, int pondY, int radius)
-        {
-            var radius2 = radius * radius;
-
-            for (var x = -radius; x <= radius; x++)
-            {
-                var dx = pondX + x;
-                if ((dx < 0) || (dx >= WORLD_WIDTH))
-                {
-                    continue;
-                }
-
-                for (var y = -radius; y <= radius; y++)
-                {
-                    var dy = pondY + y;
-                    if ((dy < 0) || (dy >= WORLD_HEIGHT))
-                    {
-                        continue;
-                    }
-
-                    if (x * x + y * y <= radius2)
-                    {
-                        cells[dx, dy] = new WaterSourceCell(dx, dy);
-                    }
-                }
-            }
-        }
-
-        private void DrawPillar(WorldCell[,] cells, int pillarX, int pillarY, int radius)
-        {
-            var radius2 = radius * radius;
-
-            for (var x = -radius; x <= radius; x++)
-            {
-                var dx = pillarX + x;
-                if ((dx < 0) || (dx >= WORLD_WIDTH))
-                {
-                    continue;
-                }
-
-                for (var y = -radius; y <= radius; y++)
-                {
-                    var dy = pillarY + y;
-                    if ((dy < 0) || (dy >= WORLD_HEIGHT))
-                    {
-                        continue;
-                    }
-
-                    if (x * x + y * y <= radius2)
-                    {
-                        cells[dx, dy] = new WallWorldCell(dx, dy);
-                    }
-                }
-            }
-        }
-
-        private void PlaceEntities()
-        {
-            var numEntities = _random.Next(50, 100);
-            for (var n = 0; n < numEntities; n++)
-            {
-                var isPlaced = false;
-                while (!isPlaced)
-                {
-                    var x = _random.Next(0, 256);
-                    var y = _random.Next(0, 256);
-                    var cell = Cells[x, y];
-                    if (!(cell is FloorWorldCell))
-                    {
-                        continue;
-                    }
-
-                    var oink = new OinkEntity(x, y);
-                    Entities.Add(oink);
-                    isPlaced = true;
-                }
-            }
+            return Cells.IsMovementBlocked(position) || Entities.IsMovementBlocked(position);
         }
 
         public override void Render(TimeSpan delta)
@@ -262,7 +94,7 @@ namespace DungeonLife
                 IsStepping = false;
             }
 
-            Parallel.ForEach(Cells.Cast<WorldCell>(), cell =>
+            Parallel.ForEach(Cells, cell =>
             {
                 if (isUpdating)
                 {

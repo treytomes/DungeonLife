@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Numerics;
 
 namespace DungeonLife
 {
-    public interface IWorldState
+    interface IWorldState
     {
         TimeSpan WorldTime { get; set; }
-        WorldCell[,] Cells { get; }
-
-        Entity GetEntityAt(float x, float y);
-        IEnumerable<Entity> GetEntitiesInArea(float x, float y, float radius, Type entityType = null);
-        bool IsMovementBlocked(float x, float y);
+        WorldCellCollection Cells { get; }
+        EntityCollection Entities { get; }
+        bool IsMovementBlocked(Vector2 position);
     }
 }

@@ -1,17 +1,14 @@
 ﻿using SadConsole;
 using SadRogue.Primitives;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 
 namespace DungeonLife
 {
-    public abstract class WorldCell
+    abstract class WorldCell
     {
         #region Constants
 
-        protected const float IDEAL_TEMPERATURE = 21;
         protected const int TEMPERATURE_SEARCH_RADIUS = 1;
         protected const int HUMIDITY_SEARCH_RADIUS = 2;
         protected const bool SHOW_TEMPERATURE = true;
@@ -49,7 +46,7 @@ namespace DungeonLife
             }
         }
 
-        public float Temperature { get; set; } = IDEAL_TEMPERATURE;
+        public float Temperature { get; set; } = LifeAppSettings.IdealTemperature;
         public float Humidity { get; set; } = 0;
 
         public virtual Color BackgroundColor
@@ -81,56 +78,13 @@ namespace DungeonLife
 
         public virtual void Update(IWorldState state)
         {
-            Humidity = GetRegionHumidity(Position, state.Cells) * 0.999f;
+            Humidity = state.Cells.GetRegionHumidity(Position, HUMIDITY_SEARCH_RADIUS) * 0.999f;
             Humidity = MathHelpers.Clamp(Humidity, 0.0f, 1.0f);
         }
 
         public virtual void Draw(TimeSpan delta, CellSurface surface)
         {
             surface.SetGlyph((int)Position.X, (int)Position.Y, Glyph, ForegroundColor, BackgroundColor);
-        }
-
-        protected IEnumerable<WorldCell> IterateOver(Vector2 position, WorldCell[,] cells, int radius)
-        {
-            var xMin = Math.Max(0, Position.X - radius);
-            var xMax = Math.Min(cells.GetLength(0) - 1, Position.X + radius);
-            var yMin = Math.Max(0, Position.Y - radius);
-            var yMax = Math.Min(cells.GetLength(1) - 1, Position.Y + radius);
-
-            for (var xx = xMin; xx <= xMax; xx++)
-            {
-                for (var yy = yMin; yy <= yMax; yy++)
-                {
-                    yield return cells[(int)xx, (int)yy];
-                }
-            }
-        }
-
-        protected float SumOver(Vector2 position, WorldCell[,] cells, int radius, Func<WorldCell, float> property)
-        {
-            return IterateOver(position, cells, radius).Sum(property);
-        }
-
-        protected float AverageOver(Vector2 position, WorldCell[,] cells, int radius, Func<WorldCell, float> property)
-        {
-            var numCells = (radius * 2 + 1) * (radius * 2 + 1);
-            return SumOver(position, cells, radius, property) / numCells;
-        }
-
-        /// <summary>
-        /// Get the average temperature for the region.
-        /// </summary>
-        protected float GetRegionTemperature(Vector2 position, WorldCell[,] cells, int radius = TEMPERATURE_SEARCH_RADIUS)
-        {
-            return AverageOver(position, cells, radius, c => c.Temperature);
-        }
-
-        /// <summary>
-        /// Get the average humidity for the region.
-        /// </summary>
-        protected float GetRegionHumidity(Vector2 position, WorldCell[,] cells, int radius = HUMIDITY_SEARCH_RADIUS)
-        {
-            return AverageOver(position, cells, radius, c => c.Humidity);
         }
 
         #endregion

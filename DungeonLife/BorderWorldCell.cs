@@ -5,7 +5,7 @@ namespace DungeonLife
     /// <summary>
     /// A wall that emanates heat throughout the day.
     /// </summary>
-    public class BorderWorldCell : WallWorldCell
+    class BorderWorldCell : WallWorldCell
     {
         public BorderWorldCell(int x, int y)
             : base(x, y)

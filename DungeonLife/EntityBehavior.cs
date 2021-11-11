@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
 
 namespace DungeonLife
 {
-    public abstract class EntityBehavior
+    abstract class EntityBehavior
     {
         protected static IRandom _random = ThreadSafeRandom.Instance;
         protected readonly Entity _entity;
@@ -24,29 +22,13 @@ namespace DungeonLife
         {
             return GetType().GetCustomAttribute<DisplayNameAttribute>().DisplayName;
         }
-
-        protected IEnumerable<WorldCell> IterateOver(int x, int y, WorldCell[,] cells, int radius)
-        {
-            var xMin = Math.Max(0, x - radius);
-            var xMax = Math.Min(cells.GetLength(0) - 1, x + radius);
-            var yMin = Math.Max(0, y - radius);
-            var yMax = Math.Min(cells.GetLength(1) - 1, y + radius);
-
-            for (var xx = xMin; xx <= xMax; xx++)
-            {
-                for (var yy = yMin; yy <= yMax; yy++)
-                {
-                    yield return cells[xx, yy];
-                }
-            }
-        }
     }
 
     /// <summary>
     /// The entity will wander aimlessly.
     /// </summary>
     [DisplayName("Wandering")]
-    public class EntityWanderBehavior : EntityBehavior
+    class EntityWanderBehavior : EntityBehavior
     {
         private const int MAINTENANCE_BIAS = 1;
 
@@ -71,7 +53,7 @@ namespace DungeonLife
     }
 
     [DisplayName("Separating")]
-    public class EntitySeparationBehavior : EntityBehavior
+    class EntitySeparationBehavior : EntityBehavior
     {
         private const int MAINTENANCE_BIAS = 1;
 
@@ -87,7 +69,7 @@ namespace DungeonLife
 
         public override bool Update(IWorldState world)
         {
-            var entities = world.GetEntitiesInArea(_entity.Position.X, _entity.Position.Y, _entity.RangeOfSight, _entity.GetType());
+            var entities = world.Entities.InArea(_entity.Position, _entity.RangeOfSight, _entity.GetType());
             var count = entities.Count();
             if (count <= 1)
             {
@@ -126,7 +108,7 @@ namespace DungeonLife
     }
 
     [DisplayName("Aligning")]
-    public class EntityAlignmentBehavior : EntityBehavior
+    class EntityAlignmentBehavior : EntityBehavior
     {
         private const int MAINTENANCE_BIAS = 1;
 
@@ -137,7 +119,7 @@ namespace DungeonLife
 
         public override bool Update(IWorldState world)
         {
-            var entities = world.GetEntitiesInArea(_entity.Position.X, _entity.Position.Y, _entity.RangeOfSight, _entity.GetType());
+            var entities = world.Entities.InArea(_entity.Position, _entity.RangeOfSight, _entity.GetType());
             var count = entities.Count();
             if (count <= 1)
             {
@@ -145,29 +127,26 @@ namespace DungeonLife
                 return false;
             }
 
-            float dx = 0;
-            float dy = 0;
+            var d = Vector2.Zero;
             foreach (var entity in entities)
             {
-                dx += entity.MovingDirection.X;
-                dy += entity.MovingDirection.Y;
+                d += entity.MovingDirection;
             }
-            dx /= count;
-            dy /= count;
+            d /= count;
 
-            if ((dx == 0) && (dy == 0))
+            if (d == Vector2.Zero)
             {
                 return false;
             }
 
-            var d = Vector2.Normalize(new Vector2(dx, dy));
-            _entity.MovingDirection = Vector2.Normalize((_entity.MovingDirection * MAINTENANCE_BIAS + new Vector2(d.X, d.Y)) / (MAINTENANCE_BIAS + 1));
+            d = Vector2.Normalize(d);
+            _entity.MovingDirection = Vector2.Normalize((_entity.MovingDirection * MAINTENANCE_BIAS + d) / (MAINTENANCE_BIAS + 1));
             return true;
         }
     }
 
     [DisplayName("Cohesing")]
-    public class EntityCohesionBehavior : EntityBehavior
+    class EntityCohesionBehavior : EntityBehavior
     {
         private const int MAINTENANCE_BIAS = 1;
 
@@ -178,7 +157,7 @@ namespace DungeonLife
 
         public override bool Update(IWorldState world)
         {
-            var entities = world.GetEntitiesInArea(_entity.Position.X, _entity.Position.Y, _entity.RangeOfSight, _entity.GetType());
+            var entities = world.Entities.InArea(_entity.Position, _entity.RangeOfSight, _entity.GetType());
             var count = entities.Count();
             if (count <= 1)
             {
@@ -216,7 +195,7 @@ namespace DungeonLife
     /// Seek out water to satisfy thirst.
     /// </summary>
     [DisplayName("Thirsty")]
-    public class EntityThirstBehavior : EntityBehavior
+    class EntityThirstBehavior : EntityBehavior
     {
         /// <summary>
         /// Water is perfectly thirst-quenching.
@@ -268,7 +247,7 @@ namespace DungeonLife
             }
 
             // Seek out water.
-            var cells = IterateOver((int)_entity.Position.X, (int)_entity.Position.Y, world.Cells, _entity.RangeOfSight);
+            var cells = world.Cells.IterateOver(_entity.Position, _entity.RangeOfSight);
 
             var closestWaterDistance = float.MaxValue;
             var closestWaterPosition = Vector2.One * float.MaxValue;
@@ -287,7 +266,7 @@ namespace DungeonLife
                         closestWaterDistance = dist;
                         closestWaterPosition = cell.Position;
 
-                        if (closestWaterDistance <= 1)
+                        if (closestWaterDistance < 2)
                         {
                             break;
                         }
@@ -343,7 +322,7 @@ namespace DungeonLife
     /// Seek out algae to satisfy hunger.
     /// </summary>
     [DisplayName("Hungry")]
-    public class EntityHungerBehavior : EntityBehavior
+    class EntityHungerBehavior : EntityBehavior
     {
         /// <summary>
         /// Reducing the food value of algae should force for travelling in search of food.
@@ -410,8 +389,7 @@ namespace DungeonLife
                 return true;
             }
 
-            // Seek out water.
-            var cells = IterateOver((int)_entity.Position.X, (int)_entity.Position.Y, world.Cells, _entity.RangeOfSight);
+            var cells = world.Cells.IterateOver(_entity.Position, _entity.RangeOfSight);
 
             var closestFoodDistance = float.MaxValue;
             var closestFoodPosition = Vector2.One * float.MaxValue;
@@ -437,7 +415,7 @@ namespace DungeonLife
             var delta = Vector2.Zero;
             if (closestFoodDistance != float.MaxValue)
             {
-                if (closestFoodDistance <= 1)
+                if (closestFoodDistance < 2)
                 {
                     if (Eat(world.Cells[(int)closestFoodPosition.X, (int)closestFoodPosition.Y]))
                     {
@@ -459,7 +437,7 @@ namespace DungeonLife
         }
     }
 
-    public static class BehaviorFactory
+    static class BehaviorFactory
     {
         public static EntityBehavior Wander(Entity entity)
         {
