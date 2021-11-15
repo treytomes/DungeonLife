@@ -1,20 +1,5 @@
 ﻿namespace DungeonLife
 {
-    abstract class WorldGenerator
-    {
-        protected IRandom _random = ThreadSafeRandom.Instance;
-
-        public void Generate(IWorldState world)
-        {
-            BuildWorld(world);
-            PlaceEntities(world);
-        }
-
-        public abstract void BuildWorld(IWorldState world);
-
-        public abstract void PlaceEntities(IWorldState world);
-    }
-
     class SpaciousCavernGenerator : WorldGenerator
     {
         public override void BuildWorld(IWorldState world)
@@ -24,11 +9,7 @@
             {
                 for (var y = 1; y < world.Cells.Height - 1; y++)
                 {
-                    var floor = new FloorWorldCell(x, y);
-                    floor.Temperature = LifeAppSettings.IdealTemperature;
-                    floor.Humidity = (float)_random.NextDouble() * 0.02f;
-                    floor.AlgaeLevel = (float)_random.NextDouble();
-                    world.Cells[x, y] = floor;
+                    CreateFloor(world, x, y);
                 }
             }
 

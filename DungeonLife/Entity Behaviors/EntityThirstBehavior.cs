@@ -31,6 +31,9 @@ namespace DungeonLife
                 {
                     _entity.Thirst = 0;
                 }
+
+                _entity.MovingDirection = Vector2.Zero;
+
                 return true;
             }
             return false;
@@ -63,20 +66,24 @@ namespace DungeonLife
 
             var closestWaterDistance = float.MaxValue;
             var closestWaterPosition = Vector2.One * float.MaxValue;
+            var closestWaterValue = 0;
 
             var closestHumidDistance = float.MaxValue;
             var closestHumidPosition = Vector2.One * float.MaxValue;
-            var closestHumidity = float.MinValue;
+            var closestHumidityValue = float.MinValue;
 
             foreach (var cell in cells)
             {
                 if (cell is WaterSourceCell)
                 {
+                    var waterValue = 1.0f;
                     var dist = (_entity.Position - cell.Position).LengthSquared();
-                    if (dist < closestWaterDistance)
+
+                    if ((waterValue > closestWaterValue) || ((waterValue == closestWaterValue) && (dist < closestWaterDistance)))
                     {
                         closestWaterDistance = dist;
                         closestWaterPosition = cell.Position;
+                        closestWaterValue = 1;
 
                         if (closestWaterDistance < 2)
                         {
@@ -87,14 +94,15 @@ namespace DungeonLife
                 else if (closestWaterDistance == float.MaxValue)
                 {
                     // No water found yet, so look for the most humid cell.
+                    var humidValue = cell.Humidity;
                     var dist = (_entity.Position - cell.Position).LengthSquared();
 
                     // Is the cell either more humid than the current target, or just as humid and closer?
-                    if ((cell.Humidity > closestHumidity) || ((cell.Humidity == closestHumidDistance) && (dist < closestHumidDistance)))
+                    if ((humidValue > closestHumidityValue) || ((cell.Humidity == closestHumidDistance) && (dist < closestHumidDistance)))
                     {
                         closestHumidDistance = dist;
                         closestHumidPosition = cell.Position;
-                        closestHumidity = cell.Humidity;
+                        closestHumidityValue = cell.Humidity;
                     }
                 }
             }
@@ -102,7 +110,7 @@ namespace DungeonLife
             var delta = Vector2.Zero;
             if (closestWaterDistance != float.MaxValue)
             {
-                if (closestWaterDistance <= 1)
+                if (closestWaterDistance < 2)
                 {
                     // You're next to the water, so take a drink.
                     if (Drink(world.Cells[(int)closestWaterPosition.X, (int)closestWaterPosition.Y]))

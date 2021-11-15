@@ -1,4 +1,6 @@
-﻿namespace DungeonLife
+﻿using System;
+
+namespace DungeonLife
 {
     static class BehaviorFactory
     {
@@ -30,6 +32,11 @@
         public static EntityBehavior Hunger(Entity entity)
         {
             return new EntityHungerBehavior(entity);
+        }
+
+        public static EntityBehavior Death(Entity entity, TimeSpan lifeSpan)
+        {
+            return new DeathByOldAgeBehavior(entity, lifeSpan);
         }
     }
 }

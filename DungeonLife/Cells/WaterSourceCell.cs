@@ -49,6 +49,14 @@ namespace DungeonLife
             {
                 Humidity -= HUMIDITY_DELTA;
             }
+            if (Humidity > 1)
+            {
+                Humidity = 1;
+            }
+            else if (Humidity < 0)
+            {
+                Humidity = 0;
+            }
 
             var newTemp = state.Cells.GetRegionTemperature(Position, TEMPERATURE_SEARCH_RADIUS);
 

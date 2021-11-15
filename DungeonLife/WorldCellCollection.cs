@@ -24,7 +24,7 @@ namespace DungeonLife
         {
             get
             {
-                if ((x < 0) || (x > Width) || (y < 0) || (y > Height))
+                if ((x < 0) || (x >= Width) || (y < 0) || (y >= Height))
                 {
                     return null;
                 }
@@ -32,7 +32,7 @@ namespace DungeonLife
             }
             set
             {
-                if ((x < 0) || (x > Width) || (y < 0) || (y > Height))
+                if ((x < 0) || (x >= Width) || (y < 0) || (y >= Height))
                 {
                     throw new ArgumentOutOfRangeException();
                 }
@@ -98,7 +98,7 @@ namespace DungeonLife
 
         public bool IsMovementBlocked(Vector2 position)
         {
-            return this[position].BlocksMovement;
+            return (this[position]?.BlocksMovement).GetValueOrDefault(true);
         }
 
         public IEnumerator<WorldCell> GetEnumerator()

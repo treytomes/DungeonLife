@@ -37,13 +37,13 @@ namespace DungeonLife
 
         #region Constructors
 
-        public WorldConsole(int width, int height, WorldGenerator generator = null)
+        public WorldConsole(int width, int height, WorldGenerator generator)
             : base(width, height)
         {
             Cells = new WorldCellCollection(LifeAppSettings.WorldWidth, LifeAppSettings.WorldHeight);
             Entities = new EntityCollection();
 
-            (generator ?? new SpaciousCavernGenerator()).Generate(this);
+            generator.Generate(this);
 
             // Create the shared surface
             _sharedSurface = new CellSurface(LifeAppSettings.WorldWidth, LifeAppSettings.WorldHeight);
@@ -71,6 +71,11 @@ namespace DungeonLife
 
         #region Methods
 
+        public bool IsMovementBlocked(float x, float y)
+        {
+            return IsMovementBlocked(new Vector2(x, y));
+        }
+
         public bool IsMovementBlocked(Vector2 position)
         {
             return Cells.IsMovementBlocked(position) || Entities.IsMovementBlocked(position);
@@ -85,7 +90,7 @@ namespace DungeonLife
 
             _totalElapsedTime += delta;
             var worldDelta = TimeSpan.FromMinutes(1);
-            var isUpdating = IsRunning || IsStepping;
+            var isUpdating = false;
             if (IsStepping || _totalElapsedTime.Subtract(_lastUpdateTime).Milliseconds >= MS_PER_FRAME)
             {
                 WorldTime += worldDelta;

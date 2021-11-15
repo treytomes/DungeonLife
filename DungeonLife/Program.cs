@@ -45,7 +45,8 @@ namespace DungeonLife
             Game.Instance.DestroyDefaultStartingConsole();
 
             const int DETAILS_WIDTH = 32;
-            _worldConsole = new WorldConsole(LifeAppSettings.ScreenWidth - DETAILS_WIDTH, LifeAppSettings.ScreenHeight);
+            _worldConsole = new WorldConsole(LifeAppSettings.ScreenWidth - DETAILS_WIDTH, LifeAppSettings.ScreenHeight, new CavernGenerator());
+            //_worldConsole = new WorldConsole(LifeAppSettings.ScreenWidth - DETAILS_WIDTH, LifeAppSettings.ScreenHeight, new SpaciousCavernGenerator());
 
             //var cellInfoDialog = new CellInfoWindow();
             //_main.Children.Add(cellInfoDialog);

@@ -28,15 +28,16 @@ namespace DungeonLife
             RangeOfSmellMultiplier = 0.5f;
             RangeOfSightMultiplier = 0.3f;
 
+            Behaviors.Add(BehaviorFactory.Death(this, MaturityAge * 4));
             // TODO: Oxygen
             // TODO: Reproduction
             Behaviors.Add(BehaviorFactory.Thirst(this));
             Behaviors.Add(BehaviorFactory.Hunger(this));
-            // TODO: Temperature
-            // TODO: Wetness; much much to the oinks like to be wet?
+            // TODO: Temperature; metabolism and speed increase with heat and decrease with cold.  Too much heat or cold affects health.
+            // TODO: Wetness; much much do the oinks like to be wet?
             Behaviors.Add(BehaviorFactory.Separation(this));
             Behaviors.Add(BehaviorFactory.Alignment(this));
-            Behaviors.Add(BehaviorFactory.Wander(this));
+            Behaviors.Add(BehaviorFactory.Wander(this));  // TODO: This would be the place to insert some type of neural network.
             Behaviors.Add(BehaviorFactory.Cohesion(this));
         }
     }

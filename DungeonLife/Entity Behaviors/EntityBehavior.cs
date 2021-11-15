@@ -1,6 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Linq;
-using System.Numerics;
 using System.Reflection;
 
 namespace DungeonLife

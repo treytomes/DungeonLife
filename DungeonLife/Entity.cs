@@ -8,6 +8,13 @@ namespace DungeonLife
 {
     class Entity
     {
+        #region Fields
+
+        private Vector2 _movingDirection;
+        private Color _foregroundColor;
+
+        #endregion
+
         #region Constructors
 
         public Entity(int x, int y)
@@ -15,6 +22,7 @@ namespace DungeonLife
             Position = new Vector2(x, y);
             MaturityAge = TimeSpan.Zero;
             Age = TimeSpan.Zero;
+            MovingDirection = ThreadSafeRandom.Instance.NextDirection();
         }
 
         #endregion
@@ -36,7 +44,24 @@ namespace DungeonLife
 
         public EntityBehavior ActiveBehavior { get; private set; }
 
-        public Vector2 MovingDirection { get; set; }
+        public Vector2 MovingDirection
+        {
+            get
+            {
+                if (IsDead)
+                {
+                    return Vector2.Zero;
+                }
+                else
+                {
+                    return _movingDirection;
+                }
+            }
+            set
+            {
+                _movingDirection = value;
+            }
+        }
 
         public Vector2 Position { get; set; }
         public TimeSpan MaturityAge { get; protected set; }
@@ -80,7 +105,6 @@ namespace DungeonLife
 
         public int BabyGlyph { get; protected set; }
         public int AdultGlyph { get; protected set; }
-        public Color ForegroundColor { get; protected set; }
 
         public bool IsAdult
         {
@@ -98,11 +122,39 @@ namespace DungeonLife
             }
         }
 
+        public bool IsDead { get; set; } = false;
+
         public int Glyph
         {
             get
             {
-                return (Age > MaturityAge) ? AdultGlyph : BabyGlyph;
+                if (IsDead)
+                {
+                    return '%';
+                }
+                else
+                {
+                    return (Age > MaturityAge) ? AdultGlyph : BabyGlyph;
+                }
+            }
+        }
+
+        public Color ForegroundColor
+        {
+            get
+            {
+                if (IsDead)
+                {
+                    return Color.White;
+                }
+                else
+                {
+                    return _foregroundColor;
+                }
+            }
+            set
+            {
+                _foregroundColor = value;
             }
         }
 
@@ -122,24 +174,41 @@ namespace DungeonLife
                 }
             }
 
-            Age += worldDelta;
-            Hunger += Metabolism * HungerMultiplier;
-            Hunger = MathHelpers.Clamp(Hunger, 0.0f, 1.0f);
-            Thirst += Metabolism * ThirstMultiplier;
-            Thirst = MathHelpers.Clamp(Thirst, 0.0f, 1.0f);
-
-            var cell = world.Cells[(int)Position.X, (int)Position.Y];
-            var newPosition = Position + MovingDirection * cell.MovementSpeedMultiplier;
-            if (world.IsMovementBlocked(newPosition))
+            if (!IsDead)
             {
-                MovingDirection = -MovingDirection;
-            }
-            else
-            {
-                Position = newPosition;
+                Age += worldDelta;
+                Hunger += Metabolism * HungerMultiplier;
+                if (Hunger > 1)
+                {
+                    Hunger = 1;
+                }
+                else if (Hunger < 0)
+                {
+                    Hunger = 0;
+                }
+                Thirst += Metabolism * ThirstMultiplier;
+                if (Thirst > 1)
+                {
+                    Thirst = 1;
+                }
+                else if (Thirst < 0)
+                {
+                    Thirst = 0;
+                }
 
-                // TODO: If the cell is wet, increase the wetness of this entity.
-                // TODO: Water should slow movement speed.
+                var cell = world.Cells[(int)Position.X, (int)Position.Y];
+                var newPosition = Position + MovingDirection * cell.MovementSpeedMultiplier;
+                if (world.IsMovementBlocked(newPosition))
+                {
+                    MovingDirection = -MovingDirection;
+                }
+                else
+                {
+                    Position = newPosition;
+
+                    // TODO: If the cell is wet, increase the wetness of this entity.
+                    // TODO: Water should slow movement speed.
+                }
             }
         }
 

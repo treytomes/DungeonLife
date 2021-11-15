@@ -79,7 +79,14 @@ namespace DungeonLife
         public virtual void Update(IWorldState state)
         {
             Humidity = state.Cells.GetRegionHumidity(Position, HUMIDITY_SEARCH_RADIUS) * 0.999f;
-            Humidity = MathHelpers.Clamp(Humidity, 0.0f, 1.0f);
+            if (Humidity > 1)
+            {
+                Humidity = 1;
+            }
+            else if (Humidity < 0)
+            {
+                Humidity = 0;
+            }
         }
 
         public virtual void Draw(TimeSpan delta, CellSurface surface)

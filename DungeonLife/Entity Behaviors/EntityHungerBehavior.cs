@@ -47,6 +47,8 @@ namespace DungeonLife
                         _entity.Hunger = 0;
                     }
 
+                    _entity.MovingDirection = Vector2.Zero;
+
                     return true;
                 }
             }
@@ -78,7 +80,7 @@ namespace DungeonLife
 
             var closestFoodDistance = float.MaxValue;
             var closestFoodPosition = Vector2.One * float.MaxValue;
-            var closestFoodLevel = float.MinValue;
+            var closestFoodValue = float.MinValue;
 
             foreach (var cell in cells)
             {
@@ -88,11 +90,11 @@ namespace DungeonLife
                     // Grab either the closest floor cell or the one with the highest food level.
                     var dist = (_entity.Position - cell.Position).LengthSquared();
 
-                    if ((dist < closestFoodDistance) || ((dist == closestFoodDistance) && (floor.AlgaeLevel > closestFoodLevel)))
+                    if ((dist < closestFoodDistance) || ((dist == closestFoodDistance) && (floor.AlgaeLevel > closestFoodValue)))
                     {
                         closestFoodDistance = dist;
                         closestFoodPosition = cell.Position;
-                        closestFoodLevel = floor.AlgaeLevel;
+                        closestFoodValue = floor.AlgaeLevel;
                     }
                 }
             }
