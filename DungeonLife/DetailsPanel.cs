@@ -22,12 +22,15 @@ namespace DungeonLife
         private Label _entityDetailsHeader;
         private Label _entityName;
         private Label _entityAge;
-        private Label _entityHunger;
+        private Label _entityHungerLabel;
+        private ProgressBar _entityHunger;
         private Label _entityThirstLabel;
-        //private ProgressBar _entityThirst;
+        private ProgressBar _entityThirst;
         private Label _entityMetabolism;
         private Label _entityIsChild;
         private Label _entityState;
+
+        private Entity _selectedEntity;
 
         public DetailsPanel(int width, int height)
             : base(width, height)
@@ -62,17 +65,23 @@ namespace DungeonLife
             _entityAge.Position = (1, 6);
             Controls.Add(_entityAge);
 
-            _entityHunger = new Label("Hunger:     ");
-            _entityHunger.Position = (1, 7);
+            _entityHungerLabel = new Label("Hunger:     ");
+            _entityHungerLabel.Position = (1, 7);
+            Controls.Add(_entityHungerLabel);
+
+            _entityHunger = new ProgressBar(width - _entityHungerLabel.Width - 2, 1, HorizontalAlignment.Left);
+            _entityHunger.Position = (_entityHungerLabel.Position.X + _entityHungerLabel.Width, _entityHungerLabel.Position.Y);
+            _entityHunger.DisplayText = "%";
             Controls.Add(_entityHunger);
 
             _entityThirstLabel = new Label("Thirst:     ");
             _entityThirstLabel.Position = (1, 8);
             Controls.Add(_entityThirstLabel);
 
-            //_entityThirst = new ProgressBar(width - 2 - _entityThirstLabel.Width, 1, HorizontalAlignment.Left);
-            //_entityThirst.Position = (_entityThirstLabel.Position.X + _entityThirst.Width + 1, _entityThirstLabel.Position.Y);
-            //Controls.Add(_entityThirst);
+            _entityThirst = new ProgressBar(width - _entityThirstLabel.Width - 2, 1, HorizontalAlignment.Left);
+            _entityThirst.Position = (_entityThirstLabel.Position.X + _entityThirstLabel.Width, _entityThirstLabel.Position.Y);
+            _entityThirst.DisplayText = "%";
+            Controls.Add(_entityThirst);
 
             _entityMetabolism = new Label("Metabolism:       ");
             _entityMetabolism.Position = (1, 9);
@@ -88,7 +97,26 @@ namespace DungeonLife
         }
 
         public WorldCell SelectedCell { get; set; }
-        public Entity SelectedEntity { get; set; }
+
+        public Entity SelectedEntity
+        {
+            get
+            {
+                return _selectedEntity;
+            }
+            set
+            {
+                if (_selectedEntity != null)
+                {
+                    _selectedEntity.IsSelected = false;
+                }
+                _selectedEntity = value;
+                if (_selectedEntity != null)
+                {
+                    _selectedEntity.IsSelected = true;
+                }
+            }
+        }
 
         public override void Update(TimeSpan delta)
         {
@@ -105,11 +133,15 @@ namespace DungeonLife
             if (SelectedEntity != null)
             {
                 _entityDetailsHeader.DisplayText = $"Entity Details ({(int)SelectedEntity.Position.X}, {(int)SelectedEntity.Position.Y})";
-                _entityName.DisplayText = $"Name: {SelectedEntity.GetType().GetCustomAttribute<DisplayNameAttribute>().DisplayName}";
+
+                var genderIcon = (char)((SelectedEntity.Gender == Gender.Male) ? 11 : 12);
+                _entityName.DisplayText = $"Name: {SelectedEntity.GetType().GetCustomAttribute<DisplayNameAttribute>().DisplayName} ({genderIcon})";
+                _entityName.TextColor = (SelectedEntity.Gender == Gender.Male) ? Color.Blue : Color.Pink;
                 _entityAge.DisplayText = $"Age: {(int)SelectedEntity.Age.TotalDays}";
-                _entityHunger.DisplayText = $"Hunger: {(int)(SelectedEntity.Hunger * 100)}%";
+                _entityHungerLabel.DisplayText = $"Hunger: {(int)(SelectedEntity.Hunger * 100)}%";
+                _entityThirst.Progress = SelectedEntity.Hunger;
                 _entityThirstLabel.DisplayText = $"Thirst: {(int)(SelectedEntity.Thirst * 100)}%";
-                //_entityThirst.Progress = SelectedEntity.Thirst;
+                _entityThirst.Progress = SelectedEntity.Thirst;
                 _entityMetabolism.DisplayText = $"Metabolism: {SelectedEntity.Metabolism}";
                 _entityIsChild.DisplayText = $"Is child? {(SelectedEntity.IsChild ? "yes" : "no")}";
                 _entityState.DisplayText = $"State: {SelectedEntity.ActiveBehavior}";

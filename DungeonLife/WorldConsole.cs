@@ -114,7 +114,7 @@ namespace DungeonLife
                 {
                     e.Update(this, worldDelta);
                 }
-                e.Render(_sharedSurface);
+                e.Render(_sharedSurface, delta);
             });
 
             base.Render(delta);

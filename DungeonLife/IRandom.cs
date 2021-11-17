@@ -67,5 +67,7 @@ namespace DungeonLife
         /// </summary>
         /// <returns>A unit vector where both components are a number between -1 and 1.</returns>
         Vector2 NextDirection();
+
+        TEnum NextEnum<TEnum>() where TEnum : struct, Enum;
     }
 }

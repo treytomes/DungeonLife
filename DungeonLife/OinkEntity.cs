@@ -18,7 +18,7 @@ namespace DungeonLife
             AdultGlyph = GLYPH_ADULT;
             ForegroundColor = Color.Pink;
             Metabolism = 0.0001f;
-            Perception = 18;
+            BasePerception = 18;
 
             // Oinks are hungry creatures.
             HungerMultiplier = 5.0f;

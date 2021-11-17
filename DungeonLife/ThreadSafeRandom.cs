@@ -72,5 +72,13 @@ namespace DungeonLife
         {
             return Vector2.Normalize(new Vector2((float)NextDouble(), (float)NextDouble()) * 2.0f - Vector2.One);
         }
+
+        public TEnum NextEnum<TEnum>()
+            where TEnum : struct, Enum
+        {
+            var values = Enum.GetValues<TEnum>();
+            var index = Next(0, values.Length);
+            return values[index];
+        }
     }
 }

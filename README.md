@@ -12,12 +12,15 @@ The toolbar at the top of the screen can be used to run the simulation, pause it
 
 ## Environment
 
-A work in progress.  The "dungeon" is a 256x256 tile room.  The border wall will emit either heat or cold throughout the day.  The heat dissipates into the room.
-When water begins to heat, it lets off steam, which will raise the humidity that dissipates throughout the room.  There are stone pillars scattered around the room
-that will slow down the passage of heat.  Water will also slow the spread of heat.
+The "dungeon" is a 256x256 tile room filled using a cellular-automata based cavern generator, which I have modified to generate pools of water.
+The border wall will emit either heat or cold throughout the day.  The heat dissipates into the room. When water begins to heat, it lets off steam,
+which will raise the humidity that dissipates throughout the room.  There are stone pillars scattered around the room that will slow down the passage of heat.
+Water will also slow the spread of heat.
 
 ### TODO
-* I have a cellular-automata based cavern generator that will be used here soon-ish.
+* It would be neat if the entire world wrapped around on itself, and the UI allowed the user to keep scrolling in one direction forever.
+  I would need to reconfigure the heat sources to be in the middle of the space instead of the perimeter, since there would be no perimeter.
+  Maybe convert a couple of the stone regions to border blocks?
 
 ## Lifeforms
 
@@ -31,10 +34,20 @@ The cells are affected by temperature and humidity.  Too hot and they burn, too 
 
 ### Oinks
 
-Oinks feed on algae.  They get hungry fast, and thirsty a bit slower.  They will move in flocks following the Boids algorithm.
+* Oinks feed on algae.
+* They get hungry fast, and thirsty a bit slower.
+* They will move in flocks following the Boids algorithm.
+* They die.  Lifespan is 12 days, then each day the dice is rolled to see if that will be the day they die.  The dice is more weighted with each passing day.
+* They drop useless corpses when they die.
+* They grow up, at 1/4 of their life span.
+* There are boy oinks and girl oinks.  We'll get back to that later.
 
 #### TODO
-* Reproductive urge, temperature sensitivity, wetness sensitivity, mortality, corpses, sense of smell.
+* Reproductive urge, temperature sensitivity, wetness sensitivity, sense of smell (partially implemented).
+
+#### Sense of smell?
+
+We can see far into the distance, but not around corners.  We can smell around corners, but not long-distance.  How best to represent this fact?
 
 ## Toolchain
 

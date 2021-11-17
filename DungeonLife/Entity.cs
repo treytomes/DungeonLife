@@ -10,16 +10,23 @@ namespace DungeonLife
     {
         #region Fields
 
+        private static IRandom _random = ThreadSafeRandom.Instance;
         private Vector2 _movingDirection;
         private Color _foregroundColor;
+
+        /// <summary>
+        /// Used to control the blink color when the entity is selected.
+        /// </summary>
+        private float _blinking = 0.0f;
 
         #endregion
 
         #region Constructors
 
-        public Entity(int x, int y)
+        public Entity(int x, int y, Gender? gender = null)
         {
             Position = new Vector2(x, y);
+            Gender = gender ?? _random.NextEnum<Gender>();
             MaturityAge = TimeSpan.Zero;
             Age = TimeSpan.Zero;
             MovingDirection = ThreadSafeRandom.Instance.NextDirection();
@@ -28,6 +35,11 @@ namespace DungeonLife
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// A UI hint that the entity is currently being inspected.
+        /// </summary>
+        public bool IsSelected { get; set; }
 
         // A high thirst multiplier makes the entity favor water like a duck.
 
@@ -66,6 +78,7 @@ namespace DungeonLife
         public Vector2 Position { get; set; }
         public TimeSpan MaturityAge { get; protected set; }
         public TimeSpan Age { get; private set; }
+        public Gender Gender { get; }
 
         /// <summary>
         /// Rate of energy consumption.  Indirectly increases hunger and thirst.
@@ -75,13 +88,31 @@ namespace DungeonLife
         /// <summary>
         /// Affects the range of sight, and range of smell.
         /// </summary>
-        public int Perception { get; protected set; }
+        public int BasePerception { get; protected set; }
+
+        public int ActualPerception
+        {
+            get
+            {
+                return BasePerception;
+            }
+        }
+
+        public int BaseSpeed { get; protected set; }
+
+        public int ActualSpeed
+        {
+            get
+            {
+                return BaseSpeed;
+            }
+        }
 
         public float RangeOfSight
         {
             get
             {
-                return Perception * RangeOfSightMultiplier;
+                return ActualPerception * RangeOfSightMultiplier;
             }
         }
 
@@ -89,7 +120,7 @@ namespace DungeonLife
         {
             get
             {
-                return Perception * RangeOfSmellMultiplier;
+                return ActualPerception * RangeOfSmellMultiplier;
             }
         }
 
@@ -212,10 +243,18 @@ namespace DungeonLife
             }
         }
 
-        public void Render(CellSurface surface)
+        public void Render(CellSurface surface, TimeSpan delta)
         {
             surface.SetGlyph((int)Position.X, (int)Position.Y, Glyph);
             surface.SetForeground((int)Position.X, (int)Position.Y, ForegroundColor);
+
+            if (IsSelected)
+            {
+                _blinking += delta.Milliseconds;
+                var amount = 0.5f * ((float)Math.Sin(0.01f * _blinking) + 1);
+                var bg = surface.GetBackground((int)Position.X, (int)Position.Y);
+                surface.SetBackground((int)Position.X, (int)Position.Y, Color.Lerp(bg, Color.Red, amount));
+            }
         }
 
         #endregion
