@@ -34,6 +34,8 @@ namespace DungeonLife
             }
             else
             {
+                // You're living on borrowed time.
+
                 _lastDeathCheck = _entity.Age;
 
                 // Delta is the max remaining lifespan.  This will reduce over time.

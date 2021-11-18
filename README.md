@@ -21,6 +21,10 @@ Water will also slow the spread of heat.
 * It would be neat if the entire world wrapped around on itself, and the UI allowed the user to keep scrolling in one direction forever.
   I would need to reconfigure the heat sources to be in the middle of the space instead of the perimeter, since there would be no perimeter.
   Maybe convert a couple of the stone regions to border blocks?
+* Implement z-levels.  Maybe have level 0 wrap back around to the bottom of the dungeon?  Implement BSP dungeons on some of the levels?
+  I'll need a [better data structure](https://en.wikipedia.org/wiki/Octree) to hold my entities.
+* I've begun implementing the concept of what % of a cell is filled up.  It affects whether and how fast a cell can be passed through.
+  Entity sizes will affect this %.
 
 ## Lifeforms
 
@@ -48,6 +52,11 @@ The cells are affected by temperature and humidity.  Too hot and they burn, too 
 #### Sense of smell?
 
 We can see far into the distance, but not around corners.  We can smell around corners, but not long-distance.  How best to represent this fact?
+
+### TODO
+
+* I like the idea of making an Ant lifeform.  It would give me a chance to explore pheromone trails.  Ants are purely herbivores, while oinks are omnivores, so
+  the oinks can feast on algae and ants.  It would also mean building in some type of conflict management between species.
 
 ## Toolchain
 
